@@ -2,8 +2,9 @@ namespace Client.Managers;
 
 public interface IManager
 {
-    Package[] GetInstalledPackages();
-    Package[] GetPackagesWithAvailableUpdates();
+    Task<bool> IsManagerAvailableAsync();
+    Task<Package[]> GetInstalledPackagesAsync();
+    Task<Package[]> GetPackagesWithAvailableUpdatesAsync();
 }
 
 public class Package
