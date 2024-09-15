@@ -22,10 +22,10 @@ public partial class AptGetManager : IManager
     public async Task<Package[]> GetInstalledPackagesAsync()
     {
         var result = await ExecuteAptGetCommand("list --installed");
-        return ParsePackages(result, false).ToArray();
+        return ParsePackages(result, false).ToArray<Package>();
     }
 
-    public async Task<Package[]> GetPackagesWithAvailableUpdatesAsync()
+    public async Task<PackageUpdate[]> GetPackagesWithAvailableUpdatesAsync()
     {
         var result = await ExecuteAptGetCommand("list --upgradable");
         return ParsePackages(result, true).ToArray();
@@ -65,7 +65,7 @@ public partial class AptGetManager : IManager
         return output;
     }
 
-    private static IEnumerable<Package> ParsePackages(string aptListOutput, bool includeAvailableVersion)
+    private static IEnumerable<PackageUpdate> ParsePackages(string aptListOutput, bool includeAvailableVersion)
     {
         var lines = aptListOutput.Split('\n').Skip(1);
         var regex = PackageInfoRegex();
@@ -81,7 +81,7 @@ public partial class AptGetManager : IManager
             var version = match.Groups[2].Value;
             var availableVersion = includeAvailableVersion ? match.Groups[3].Value : null;
 
-            yield return new Package
+            yield return new PackageUpdate
             {
                 Name = name,
                 Version = version,

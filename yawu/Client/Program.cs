@@ -45,6 +45,20 @@ internal class ManagerService(IEnumerable<IManager> managers, ILogger<ManagerSer
                         var packagesWithUpdates = await manager.GetPackagesWithAvailableUpdatesAsync();
                         logger.LogInformation(
                             $"{manager.GetType().Name} found {packagesWithUpdates.Length} packages with updates.");
+
+                        if (packagesWithUpdates.Length > 0)
+                        {
+                            logger.LogInformation($"{manager.GetType().Name} packages with updates:");
+                            foreach (var pkg in packagesWithUpdates)
+                            {
+                                logger.LogInformation(
+                                    $"- {pkg.Name}: Current Version: {pkg.Version ?? "unknown"}, Available Version: {pkg.AvailableVersion ?? "unknown"}");
+                            }
+                        }
+                        else
+                        {
+                            logger.LogInformation($"{manager.GetType().Name} has no packages with available updates.");
+                        }
                     }
                     else
                     {
@@ -56,8 +70,8 @@ internal class ManagerService(IEnumerable<IManager> managers, ILogger<ManagerSer
                     logger.LogError(ex, $"Error occurred while running {manager.GetType().Name}.");
                 }
             }
-
-            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            
+            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
         }
 
         logger.LogInformation("ManagerService is stopping.");
