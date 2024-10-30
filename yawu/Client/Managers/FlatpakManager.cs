@@ -1,9 +1,12 @@
 using System.Diagnostics;
+using Shared;
 
 namespace Client.Managers
 {
     public class FlatpakManager : IManager
     {
+        private const string ManagerName = nameof(FlatpakManager);
+
         public async Task<bool> IsManagerAvailableAsync()
         {
             try
@@ -30,7 +33,12 @@ namespace Client.Managers
             var updatesPackages = ParseAvailableUpdates(updatesResult);
 
             return updatesPackages.Select(update => new PackageUpdate
-                { Name = update.Name, Version = update.Version, AvailableVersion = null }).ToArray();
+            {
+                Name = update.Name,
+                Version = update.Version,
+                AvailableVersion = null,
+                PackageManager = ManagerName
+            }).ToArray();
         }
 
         private static async Task<string> ExecuteCommandAsync(string command)
@@ -79,7 +87,8 @@ namespace Client.Managers
                 yield return new Package
                 {
                     Name = name,
-                    Version = version
+                    Version = version,
+                    PackageManager = ManagerName
                 };
             }
         }

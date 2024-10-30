@@ -2,6 +2,7 @@ namespace Shared;
 
 public class Package
 {
-    public string PackageName { get; set; }
-    public string Version { get; set; }
+    public required string Name { get; init; }
+    public required string Version { get; init; }
+    public required string PackageManager { get; init; }
 }

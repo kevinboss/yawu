@@ -1,40 +1,47 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.SignalR
 @using Microsoft.AspNetCore.SignalR.Client
 @using Shared
-@inject NavigationManager Navigation
-@implements IAsyncDisposable
+@inject HubConnection HubConnection
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Packages</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Packages</h1>
+
+@foreach (var packageManager in _packagesByManager.Keys)
+{
+    <h2>@packageManager</h2>
+    <ul>
+        @foreach (var package in _packagesByManager[packageManager])
+        {
+            <li>@package.Name - @package.Version</li>
+        }
+    </ul>
+}
 
 @code {
-    private HubConnection? _hubConnection;
+    private readonly Dictionary<string, List<Package>> _packagesByManager = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/updateshub"))
-            .Build();
-
-        _hubConnection.On<Package[]>("PackagesUpdated", packages =>
+        HubConnection.Remove("Packages");
+        HubConnection.On<Package[]>("Packages", async packages =>
         {
-            
-            InvokeAsync(StateHasChanged);
+            _packagesByManager.Clear();
+            foreach (var package in packages)
+            {
+                if (!_packagesByManager.ContainsKey(package.PackageManager))
+                {
+                    _packagesByManager[package.PackageManager] = [];
+                }
+
+                _packagesByManager[package.PackageManager].Add(package);
+            }
+
+            await InvokeAsync(StateHasChanged);
         });
-
-        await _hubConnection.StartAsync();
-    }
-
-    public bool IsConnected =>
-        _hubConnection?.State == HubConnectionState.Connected;
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_hubConnection is not null)
-        {
-            await _hubConnection.DisposeAsync();
-        }
+        return Task.CompletedTask;
     }
 
 }

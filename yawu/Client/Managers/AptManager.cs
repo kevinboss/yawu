@@ -1,10 +1,13 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Shared;
 
 namespace Client.Managers;
 
 public partial class AptGetManager : IManager
 {
+    private const string ManagerName = nameof(AptGetManager);
+
     public async Task<bool> IsManagerAvailableAsync()
     {
         try
@@ -85,7 +88,8 @@ public partial class AptGetManager : IManager
             {
                 Name = name,
                 Version = version,
-                AvailableVersion = availableVersion
+                AvailableVersion = availableVersion,
+                PackageManager = ManagerName
             };
         }
     }

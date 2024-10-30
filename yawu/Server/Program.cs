@@ -1,18 +1,20 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Server;
+using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddSignalR();
-
-builder.Services.AddResponseCompression(opts =>
+var services = builder.Services;
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen();
+services.AddSignalR();
+services.AddResponseCompression(opts =>
 {
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
         ["application/octet-stream"]);
 });
+services.AddJwtService();
 
 var app = builder.Build();
 
@@ -26,11 +28,14 @@ app.UseHttpsRedirection();
 
 app.UseResponseCompression();
 
-app.MapGet("/token", (JwtService jwtService) =>
+app.MapGet("/token", ([FromServices] JwtService jwtService) =>
     {
-        var hubIdentifier = new HubIdentifier { ConnectionId = "e7b8a9d2-3c4e-4f8b-9a6e-1f2d3c4b5a6e" };
+        var hubIdentifier = new HubIdentifier { ConnectionId = Constants.ConnectionId };
         var token = jwtService.GenerateToken(hubIdentifier);
-        return Results.Ok(token);
+        return Results.Ok(new TokenResult
+        {
+            Token = token
+        });
     })
     .WithName("GenerateToken")
     .WithOpenApi();
